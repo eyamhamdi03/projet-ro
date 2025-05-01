@@ -1,16 +1,21 @@
+"use client";
+
+import { useState } from "react";
+import AllocationForm from "@/components/AllocationForm";
 import Breadcrumb from "@/components/Common/Breadcrumb";
+import HousePlan from "@/components/HousePlan";
+import { Resource } from "@/types/ressource";
 
-import { Metadata } from "next";
+export default function RoomAllocationPage() {
+  const [resources, setResources] = useState<Resource[]>([]);
 
-export const metadata: Metadata = {
-  title: "Room Allocation Problem | Operations Research Project",
-  keywords: "Operations Research, Project, Room Allocation Problem",
-  description:
-    "Room Allocation Problem page for the Operations Research project developed by GL3 students.",
-};
-
-const RoomAllocationPage = () => {
-  return <></>;
-};
-
-export default RoomAllocationPage;
+  return (
+    <>
+      <Breadcrumb pageName="Room Allocation" description="" />
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-24 p-6 md:grid-cols-2">
+        <AllocationForm onResourcesChange={setResources} />
+        <HousePlan resources={resources} />
+      </main>
+    </>
+  );
+}
