@@ -5,19 +5,32 @@ import { Trash2 } from "lucide-react";
 export default function DemandList() {
   const [demands, setDemands] = useState<Demand[]>([]);
 
+  // Function to fetch demands from the database
   const fetchDemands = async () => {
-    const res = await fetch("http://localhost:8000/demands/");
-    const data = await res.json();
-    setDemands(data);
+    try {
+      const res = await fetch("http://localhost:8000/demands/");
+      const data = await res.json();
+      setDemands(data);
+    } catch (error) {
+      console.error("Error fetching demands:", error);
+    }
   };
 
   const deleteDemand = async (id: string) => {
-    await fetch(`http://localhost:8000/demands/${id}`, { method: "DELETE" });
-    fetchDemands(); // refresh list
+    try {
+      await fetch(`http://localhost:8000/demands/${id}`, { method: "DELETE" });
+      fetchDemands();
+    } catch (error) {
+      console.error("Error deleting demand:", error);
+    }
   };
 
   useEffect(() => {
     fetchDemands();
+
+    const intervalId = setInterval(fetchDemands, 5000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (

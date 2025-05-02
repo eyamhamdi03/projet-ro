@@ -6,18 +6,32 @@ export default function ResourceList() {
   const [resources, setResources] = useState<Resource[]>([]);
 
   const fetchResources = async () => {
-    const res = await fetch("http://localhost:8000/resources/");
-    const data = await res.json();
-    setResources(data);
+    try {
+      const res = await fetch("http://localhost:8000/resources/");
+      const data = await res.json();
+      setResources(data);
+    } catch (error) {
+      console.error("Error fetching resources:", error);
+    }
   };
 
   const deleteResource = async (id: string) => {
-    await fetch(`http://localhost:8000/resources/${id}`, { method: "DELETE" });
-    fetchResources(); // refresh list
+    try {
+      await fetch(`http://localhost:8000/resources/${id}`, {
+        method: "DELETE",
+      });
+      fetchResources();
+    } catch (error) {
+      console.error("Error deleting resource:", error);
+    }
   };
 
   useEffect(() => {
     fetchResources();
+
+    const intervalId = setInterval(fetchResources, 5000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (

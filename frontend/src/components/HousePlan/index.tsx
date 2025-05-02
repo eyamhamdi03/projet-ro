@@ -7,18 +7,23 @@ export default function HousePlan() {
   const [resources, setResources] = useState<Resource[]>([]);
   const viewBoxSize = 400;
 
-  useEffect(() => {
-    const fetchResources = async () => {
-      try {
-        const res = await fetch("http://localhost:8000/resources/");
-        const data = await res.json();
-        setResources(data);
-      } catch (error) {
-        console.error("Failed to fetch resources:", error);
-      }
-    };
+  const fetchResources = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/resources/");
+      const data = await res.json();
+      setResources(data);
+    } catch (error) {
+      console.error("Failed to fetch resources:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchResources();
+    const interval = setInterval(() => {
+      fetchResources();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const numRooms = resources.length;
