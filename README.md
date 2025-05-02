@@ -9,13 +9,8 @@ We are using **Next.js** for the frontend with **Tailwind CSS** and other useful
 ```bash
 cd frontend
 
-npm install -D tailwindcss postcss autoprefixer
+npm install
 
-npm install next@latest react@latest react-dom@latest
-
-npx shadcn@latest init
-
-npm install class-variance-authority tailwind-variants lucide-react
 ```
 
 ---
