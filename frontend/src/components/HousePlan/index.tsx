@@ -1,14 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Resource } from "@/types/ressource";
 
-type HousePlanProps = {
-  resources: Resource[];
-};
-
-export default function HousePlan({ resources }: HousePlanProps) {
-  const numRooms = resources.length;
+export default function HousePlan() {
+  const [resources, setResources] = useState<Resource[]>([]);
   const viewBoxSize = 400;
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/resources/");
+        const data = await res.json();
+        setResources(data);
+      } catch (error) {
+        console.error("Failed to fetch resources:", error);
+      }
+    };
+
+    fetchResources();
+  }, []);
+
+  const numRooms = resources.length;
 
   if (numRooms === 0) {
     return (
@@ -21,7 +34,6 @@ export default function HousePlan({ resources }: HousePlanProps) {
     );
   }
 
-  // Find the smallest square grid that can contain all rooms (e.g., 16 rooms = 4x4)
   const gridSize = Math.ceil(Math.sqrt(numRooms));
   const cellSize = viewBoxSize / gridSize;
 
