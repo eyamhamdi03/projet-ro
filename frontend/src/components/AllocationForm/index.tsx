@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,8 +30,8 @@ export default function AllocationForm({
   const handleAddDemand = () => {
     if (demandInput.name) {
       const newDemand: Demand = {
-        id: crypto.randomUUID(),
         ...demandInput,
+        id: "",
       };
       setDemands([...demands, newDemand]);
       setDemandInput({
@@ -47,8 +45,8 @@ export default function AllocationForm({
   const handleAddResource = () => {
     if (resourceInput.name) {
       const newResource: Resource = {
-        id: crypto.randomUUID(),
         ...resourceInput,
+        id: "",
       };
       const newResources = [...resources, newResource];
       setResources(newResources);
@@ -61,8 +59,41 @@ export default function AllocationForm({
     }
   };
 
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      // Send demands to the backend
+      const demandResponse = await fetch("http://localhost:8000/demands", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(demands),
+      });
+
+      if (!demandResponse.ok) throw new Error("Failed to submit demands");
+
+      // Send resources to the backend
+      const resourceResponse = await fetch("http://localhost:8000/resources", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(resources),
+      });
+
+      if (!resourceResponse.ok) throw new Error("Failed to submit resources");
+
+      // Handle successful submission
+      console.log("Data submitted successfully");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <div className="w-full max-w-3xl space-y-8">
+      {/* Demand Form */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">Add Demand</h2>
         <div className="grid grid-cols-2 gap-4">
@@ -152,6 +183,7 @@ export default function AllocationForm({
         </Button>
       </div>
 
+      {/* Resource Form */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">Add Resource</h2>
         <div className="grid grid-cols-2 gap-4">
@@ -198,6 +230,7 @@ export default function AllocationForm({
         </Button>
       </div>
 
+      {/* Current Demands and Resources */}
       <div className="border-t pt-6">
         <h3 className="text-lg font-semibold">Current Demands</h3>
         <ul className="list-disc pl-5 text-sm">
@@ -218,11 +251,9 @@ export default function AllocationForm({
         </ul>
       </div>
 
-      <Button
-        className="bg-primary"
-        onClick={() => console.log({ demands, resources })}
-      >
-        Solve (Mock)
+      {/* Submit Button */}
+      <Button className="bg-primary" onClick={handleSubmit}>
+        Solve (Submit)
       </Button>
     </div>
   );
