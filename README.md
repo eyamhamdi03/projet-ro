@@ -42,3 +42,4 @@ with the following collections:
 
 * `Ressource`
 * `Demand`
+* `Allocation`
