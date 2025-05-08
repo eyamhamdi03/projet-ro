@@ -6,4 +6,4 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client["ro-project"]
 resource_collection = db["ressource"]
 demand_collection = db["demand"]
-collection = db["allocation"]
+allocation_collection = db["allocation"]

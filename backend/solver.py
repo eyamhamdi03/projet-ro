@@ -1,37 +1,52 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 import gurobipy as gp
 from gurobipy import GRB
-from backend.database import demand_collection ,resource_collection
-async def fetch_all_demands():
-    demands = await demand_collection.find().to_list(1000)
-    return demands
+from backend.database import demand_collection, resource_collection, allocation_collection
+from datetime import datetime, timedelta
+from backend.models import AllocationResult, AllocationEntry
 
-async def fetch_all_resources():
-    resources = await resource_collection.find().to_list(1000)
-    return resources
 
 def parse_time(time_str: str) -> int:
-    """Convertit 'HH:MM' en minutes depuis minuit pour le tri"""
+    """Convertit HH:MM en minutes"""
     hh, mm = map(int, time_str.split(':'))
     return hh * 60 + mm
 
 
+def expand_time_range(range_str: str) -> List[str]:
+    """Transforme une plage horaire '08:00-10:00' en ['08:00', '09:00']"""
+    start_str, end_str = range_str.split("-")
+    start = datetime.strptime(start_str, "%H:%M")
+    end = datetime.strptime(end_str, "%H:%M")
+
+    slots = []
+    while start + timedelta(hours=1) <= end:
+        slots.append(start.strftime("%H:%M"))
+        start += timedelta(hours=1)
+    return slots
+
+
+async def fetch_all_demands():
+    return await demand_collection.find().to_list(1000)
+
+
+async def fetch_all_resources():
+    return await resource_collection.find().to_list(1000)
+
+
 async def solve_allocation(time_slots: List[str]):
     try:
-        # Fetch demands and resources from the database
         demands = await fetch_all_demands()
         resources = await fetch_all_resources()
 
-        # Check if time_slots is empty
-        if not time_slots:
-            return {"error": "Time slots list cannot be empty"}
-
-        # Check for valid time format
-        try:
-            [parse_time(slot) for slot in time_slots]
-        except ValueError as e:
-            return {"error": f"Invalid time format: {str(e)}"}
+        for r in resources:
+            expanded = []
+            for s in r["available_slots"]:
+                if "-" in s:
+                    expanded.extend(expand_time_range(s))
+                else:
+                    expanded.append(s)
+            r["available_slots"] = expanded
 
         model = gp.Model("resource_allocation")
         model.setParam("OutputFlag", 0)
@@ -40,20 +55,10 @@ async def solve_allocation(time_slots: List[str]):
         R = resources
         H = list(range(len(time_slots)))
 
-        # Validate demands
-        for d in D:
-            if d["earliest_start"] not in time_slots:
-                return {"error": f"Demand {d['name']}: earliest_start {d['earliest_start']} not in time_slots"}
-            if d["duration"] <= 0:
-                return {"error": f"Demand {d['name']}: duration must be positive"}
-
         d_ids = [str(d["_id"]) for d in D]
         r_ids = [str(r["_id"]) for r in R]
-
-
         x = model.addVars(d_ids, r_ids, H, vtype=GRB.BINARY, name="x")
 
-        # Contrainte 1 : chaque demande allouée au plus une fois
         for d in D:
             model.addConstr(
                 gp.quicksum(
@@ -64,21 +69,18 @@ async def solve_allocation(time_slots: List[str]):
                 ) <= 1
             )
 
-        # Contrainte 2 : validité des allocations
         for d in D:
             earliest_idx = time_slots.index(d["earliest_start"])
             for r in R:
                 for h in H:
-                    invalid = (
+                    if (
                         h < earliest_idx or
                         h + d["duration"] > len(time_slots) or
                         r["capacity"] < d["required_capacity"] or
-                        any(ir in str(r["_id"]) for ir in d["incompatible_resources"])
-                    )
-                    if invalid:
+                        str(r["_id"]) in d.get("incompatible_resources", [])
+                    ):
                         model.addConstr(x[str(d["_id"]), str(r["_id"]), h] == 0)
 
-        # Contrainte 3 : respect des créneaux disponibles
         for r in R:
             available_set = set(r["available_slots"])
             for d in D:
@@ -90,7 +92,6 @@ async def solve_allocation(time_slots: List[str]):
                         if not all(t in available_set for t in needed):
                             model.addConstr(x[str(d["_id"]), str(r["_id"]), h] == 0)
 
-        # Contrainte 4 : non-chevauchement sur une même ressource
         for r in R:
             for h in H:
                 model.addConstr(
@@ -105,37 +106,41 @@ async def solve_allocation(time_slots: List[str]):
                     ) <= 1
                 )
 
-        # Objectif : maximiser le profit
         model.setObjective(
-            gp.quicksum(x[str(d["_id"]), str(r["_id"]), h] * d["profit"] for d in D for r in R for h in H),
+            gp.quicksum(x[str(d["_id"]), str(r["_id"]), h] * d["profit"]
+                        for d in D for r in R for h in H),
             GRB.MAXIMIZE
         )
 
         model.optimize()
 
         if model.status != GRB.OPTIMAL:
-            return {"error": f"No optimal solution found. Status: {model.status}"}
+            return {"error": "No optimal solution"}
 
-        # Résultats
         allocations = []
         for d in D:
             for r in R:
                 for h in H:
-                    if h + d["duration"] <= len(time_slots) and x[str(d["_id"]),str( r["_id"]), h].X > 0.5:
-                        allocations.append({
-                            "demand": d["name"],
-                            "resource": r["name"],
-                            "start": time_slots[h],
-                            "end": time_slots[min(h + d["duration"], len(time_slots) - 1)],
-                            "profit": d["profit"]
-                        })
+                    if h + d["duration"] <= len(time_slots) and x[str(d["_id"]), str(r["_id"]), h].X > 0.5:
+                        allocations.append(AllocationEntry(
+                            demand=d["name"],
+                            resource=r["name"],
+                            start=time_slots[h],
+                            end=time_slots[h + d["duration"]],
+                            profit=d["profit"]
+                        ))
 
-        return {
-            "time_slots": time_slots,
-            "allocations": allocations,
-            "total_profit": sum(a["profit"] for a in allocations),
-            "utilization": len(allocations) / len(D) if D else 0
-        }
+        result = AllocationResult(
+            timestamp=datetime.utcnow(),
+            time_slots=time_slots,
+            allocations=allocations,
+            total_profit=sum(a.profit for a in allocations),
+            utilization=len(allocations) / len(D) if D else 0
+        )
+
+        # Sauvegarde dans Mongo
+        await allocation_collection.insert_one(result.dict(by_alias=True))
+        return result.dict()
 
     except Exception as e:
-        return {"error": f"Unexpected error: {str(e)}"}
+        return {"error": str(e)}

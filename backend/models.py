@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
@@ -27,3 +28,21 @@ class AllocationInput(BaseModel):
     demands: List[Demand]
     resources: List[Resource]
     time_slots: List[str]  # Example: ["08:00", "09:00", ..., "17:00"]
+
+class AllocationEntry(BaseModel):
+    demand: str
+    resource: str
+    start: str
+    end: str
+    profit: float
+class AllocationResult(BaseModel):
+    timestamp: datetime
+    time_slots: List[str]
+    allocations: List[AllocationEntry]
+    total_profit: float
+    utilization: float
+
+    class Config:
+        orm_mode = True
+class SolveRequest(BaseModel):
+    time_slots: List[str]
