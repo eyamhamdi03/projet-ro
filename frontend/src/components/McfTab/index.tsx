@@ -7,8 +7,8 @@ import { FaTruck, FaIndustry, FaNetworkWired } from "react-icons/fa";
 type Edge = {
   from_node: string;
   to_node: string;
-  capacity: number;
-  cost: number;
+  capacity: number; // capacity as a float
+  cost: number; // cost as a float
 };
 
 type FlowResult = {
@@ -23,13 +23,13 @@ type FlowResult = {
 export default function MCFTab() {
   const [nodes, setNodes] = useState<string>("s,a,b,t");
   const [edges, setEdges] = useState<Edge[]>([
-    { from_node: "s", to_node: "a", capacity: 15, cost: 4 },
-    { from_node: "s", to_node: "b", capacity: 8, cost: 2 },
-    { from_node: "a", to_node: "b", capacity: 5, cost: 1 },
-    { from_node: "a", to_node: "t", capacity: 10, cost: 2 },
-    { from_node: "b", to_node: "t", capacity: 15, cost: 3 },
+    { from_node: "s", to_node: "a", capacity: 15.0, cost: 4.2 },
+    { from_node: "s", to_node: "b", capacity: 8.0, cost: 2.3 },
+    { from_node: "a", to_node: "b", capacity: 5.0, cost: 1.22 },
+    { from_node: "a", to_node: "t", capacity: 10.0, cost: 2.5 },
+    { from_node: "b", to_node: "t", capacity: 15.0, cost: 3.0 },
   ]);
-  const [bValues, setBValues] = useState<number[]>([10, 0, 0, -10]);
+  const [bValues, setBValues] = useState<number[]>([10.0, 0.0, 0.0, -10.0]);
 
   const [results, setResults] = useState<null | {
     status: string;
@@ -39,13 +39,16 @@ export default function MCFTab() {
   }>(null);
 
   const handleAddEdge = () => {
-    setEdges([...edges, { from_node: "", to_node: "", capacity: 0, cost: 0 }]);
+    setEdges([
+      ...edges,
+      { from_node: "", to_node: "", capacity: 0.0, cost: 0.0 },
+    ]);
   };
 
   const handleChangeEdge = (index: number, key: keyof Edge, value: any) => {
     const newEdges = [...edges];
     newEdges[index][key] =
-      key === "capacity" || key === "cost" ? Number(value) : value;
+      key === "capacity" || key === "cost" ? parseFloat(value) : value;
     setEdges(newEdges);
   };
 
@@ -200,6 +203,7 @@ export default function MCFTab() {
                   handleChangeEdge(index, "capacity", e.target.value)
                 }
                 className="border px-2 py-1"
+                step="any"
               />
               <input
                 type="number"
@@ -209,6 +213,7 @@ export default function MCFTab() {
                   handleChangeEdge(index, "cost", e.target.value)
                 }
                 className="border px-2 py-1"
+                step="any"
               />
             </div>
           ))}
@@ -229,9 +234,10 @@ export default function MCFTab() {
                 type="number"
                 value={bValues[index] ?? 0}
                 onChange={(e) =>
-                  handleBValueChange(index, Number(e.target.value))
+                  handleBValueChange(index, parseFloat(e.target.value))
                 }
                 className="ml-2 border px-2 py-1"
+                step="any" // Allow floating point input
               />
             </div>
           ))}
