@@ -5,28 +5,28 @@ import SingleTestimonial from "./SingleTestimonial";
 const testimonialData: Testimonial[] = [
   {
     id: 1,
-    name: "Musharof Chy",
-    designation: "School Facilities Coordinator",
+    name: "Sami Bouzid",
+    designation: "Coordinateur des installations scolaires",
     content:
-      "Thanks to the optimization model, we allocated classrooms more efficiently and reduced wasted space. It has made scheduling much easier.",
+      "Grâce à ce modèle d’optimisation, nous avons pu allouer les salles de manière bien plus efficace. Les conflits d’emplois du temps ont été considérablement réduits.",
     image: "/images/testimonials/auth-01.png",
     star: 5,
   },
   {
     id: 2,
-    name: "Devid Weilium",
-    designation: "Logistics Analyst",
+    name: "Claire Laurent",
+    designation: "Analyste en logistique",
     content:
-      "The facility location planning helped us choose the best sites for our centers, minimizing travel time for our staff and clients.",
+      "La planification de la production nous permet désormais d’ajuster nos volumes de fabrication en fonction des contraintes de ressources. Un gain de temps et de coûts remarquable.",
     image: "/images/testimonials/auth-02.png",
     star: 5,
   },
   {
     id: 3,
-    name: "Lethium Frenci",
-    designation: "Professor of Operations Research",
+    name: "Pr. Alain Dupont",
+    designation: "Professeur en Recherche Opérationnelle",
     content:
-      "This project is a great real-world application of mixed integer programming. It bridges theory and practice beautifully.",
+      "Ce projet illustre parfaitement l’application concrète des modèles de PL et PLNE. C’est une excellente passerelle entre théorie et pratique.",
     image: "/images/testimonials/auth-03.png",
     star: 5,
   },
@@ -37,8 +37,8 @@ const Testimonials = () => {
     <section className="dark:bg-bg-color-dark bg-gray-light relative z-10 py-16 md:py-20 lg:py-28">
       <div className="container">
         <SectionTitle
-          title="What Experts and Users Say"
-          paragraph="Real feedback from professionals who benefited from our optimization models in education and logistics planning."
+          title="Témoignages d'experts et d'utilisateurs"
+          paragraph="Des retours authentiques de professionnels ayant utilisé nos modèles d’optimisation pour résoudre des problèmes concrets en éducation et logistique."
           center
         />
 

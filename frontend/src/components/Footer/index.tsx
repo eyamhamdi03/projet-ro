@@ -12,24 +12,24 @@ const Footer = () => {
               <div className="mb-12 max-w-[360px] lg:mb-16">
                 <Link href="/" className="mb-8 inline-block">
                   <Image
-                    src="/images/logo/logo-2.svg"
+                    src="/images/logo/logo.png"
                     alt="logo"
                     className="w-full dark:hidden"
-                    width={140}
+                    width={30}
                     height={30}
                   />
                   <Image
-                    src="/images/logo/logo.svg"
+                    src="/images/logo/logo.png"
                     alt="logo"
                     className="hidden w-full dark:block"
-                    width={140}
+                    width={30}
                     height={30}
                   />
                 </Link>
                 <p className="text-body-color dark:text-body-color-dark mb-9 text-base leading-relaxed">
-                  This project was created as part of a learning experience. It
-                  is not intended for production use and should be used at your
-                  own risk.
+                  Ce projet a été réalisé dans le cadre d’un apprentissage. Il
+                  n’est pas destiné à un usage en production et doit être
+                  utilisé à vos propres risques.
                 </p>
               </div>
             </div>

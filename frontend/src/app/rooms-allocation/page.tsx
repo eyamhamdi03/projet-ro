@@ -13,8 +13,8 @@ export default function RoomAllocationPage() {
     <>
       <Breadcrumb pageName="Room Allocation" description="" />
       <main className="mx-auto grid max-w-6xl grid-cols-1 gap-24 p-6 md:grid-cols-2">
-        <AllocationForm onResourcesChange={setResources} />
-        <HousePlan resources={resources} />
+        <AllocationForm />
+        <HousePlan />
       </main>
     </>
   );

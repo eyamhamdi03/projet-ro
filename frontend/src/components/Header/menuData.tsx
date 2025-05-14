@@ -9,8 +9,8 @@ const menuData: Menu[] = [
   },
   {
     id: 3,
-    title: "Facilities Location Problem",
-    path: "/facilities-location",
+    title: "Production Optimization Problem",
+    path: "/production-optimization",
     newTab: false,
   },
   {

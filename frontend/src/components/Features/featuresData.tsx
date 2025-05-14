@@ -1,4 +1,5 @@
 import { Feature } from "@/types/feature";
+import { LuFactory } from "react-icons/lu";
 
 const featuresData: Feature[] = [
   {
@@ -6,28 +7,21 @@ const featuresData: Feature[] = [
     icon: (
       <img
         src="/images/features/house-plan.png"
-        alt="Rooms Allocation"
+        alt="Problème d'allocation des chambres"
         width={40}
         height={41}
       />
     ),
-    title: "Rooms Allocation Problem",
+    title: "Problème d'allocation des chambres",
     paragraph:
-      "Optimally assigns rooms to resources such as departments or classes based on a predefined schedule and room capacities. This problem is modeled using linear programming techniques.",
+      "Ce problème consiste à attribuer de manière optimale des chambres à différentes ressources, telles que des départements ou des classes, en fonction d'un emploi du temps prédéfini et des capacités des chambres. C'est un problème de programmation linéaire nombres entriers PLNE .",
   },
   {
     id: 2,
-    icon: (
-      <img
-        src="/images/features/location.png"
-        alt="Facility Location"
-        width={40}
-        height={40}
-      />
-    ),
-    title: "Facility Location Problem",
+    icon: <LuFactory />,
+    title: "Problème de production",
     paragraph:
-      "Determines the optimal placement of facilities to minimize transportation costs or maximize service coverage.",
+      "L'objectif de ce problème est de déterminer combien d'unités de chaque produit fabriquer. Ce problème est un problème de programmation linéaire (PL)",
   },
 ];
 

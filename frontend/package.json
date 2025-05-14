@@ -1,5 +1,5 @@
 {
-  "name": "startup-nextjs-template",
+  "name": "opr2",
   "version": "2.2.0",
   "private": true,
   "scripts": {
@@ -15,12 +15,14 @@
     "clsx": "^2.1.1",
     "eslint": "^9.24.0",
     "eslint-config-next": "15.1.6",
+    "framer-motion": "^12.11.3",
     "lucide-react": "^0.503.0",
     "motion": "^12.9.2",
     "next": "^15.3.1",
     "next-themes": "^0.2.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
     "tailwind-merge": "^3.2.0",
     "tailwind-variants": "^1.0.0"
   },
