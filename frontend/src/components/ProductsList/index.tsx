@@ -13,20 +13,20 @@ type Product = {
 export default function ProductTable() {
   const [products, setProducts] = useState<Product[]>([]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/products");
-        if (!response.ok) throw new Error(`Failed to fetch products: ${response.statusText}`);
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
+ 
 
-    fetchProducts();
-  }, []);
+const fetchProducts = async () => {
+  try {
+    const response = await fetch("http://localhost:8000/products");
+    if (!response.ok) throw new Error(`Failed to fetch products: ${response.statusText}`);
+    const data = await response.json();
+    setProducts(data);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
+};
+
+
 
   const handleDelete = async (name: string) => {
     if (!confirm(`Voulez-vous vraiment supprimer le produit "${name}" ?`)) return;
@@ -45,7 +45,9 @@ export default function ProductTable() {
       alert("Erreur lors de la suppression du produit");
     }
   };
-
+ useEffect(() => {
+  fetchProducts();
+}, []);
   return (
     <div className="mt-10 w-full overflow-x-auto rounded-md border p-4">
       <h2 className="mb-4 text-lg font-semibold">Liste des Produits</h2>

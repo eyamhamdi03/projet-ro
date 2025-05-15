@@ -131,7 +131,7 @@ async def solve_allocation(time_slots: List[str]):
                         ))
 
         result = AllocationResult(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now().isoformat(),
             time_slots=time_slots,
             allocations=allocations,
             total_profit=sum(a.profit for a in allocations),

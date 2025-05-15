@@ -4,6 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from backend.routers import products, resources_router, demands_router, solve_router,allocations,resources_router, demands_router, solve_router,allocations, mcf_route
+from django.db import router
+
+
+from backend.models import AllocationResult
 
 
 

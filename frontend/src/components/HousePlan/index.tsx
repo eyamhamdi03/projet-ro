@@ -35,25 +35,36 @@ export default function HousePlan() {
   };
 
   const fetchAllocations = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/solve/allocations");
-      const data = await res.json();
+  try {
+    const res = await fetch("http://localhost:8000/solve/allocations");
+    const data = await res.json();
 
-      if (Array.isArray(data) && data.length > 0 && data[0].allocations) {
-        setAllocations(data[0].allocations);
-        if (data[0].total_profit) {
-          setTotalProfit(data[0].total_profit);
-        }
-        if (data[0].utilization) {
-          setUtilization(data[0].utilization * 100); // Convert to percentage
-        }
-      } else {
-        console.warn("No allocations found in response.");
+    if (Array.isArray(data) && data.length > 0) {
+      // Find the allocation set with the latest timestamp
+      const latest = data.reduce((prev, curr) =>
+        new Date(curr.timestamp) > new Date(prev.timestamp) ? curr : prev
+      );
+
+      if (latest.allocations) {
+        setAllocations(latest.allocations);
       }
-    } catch (error) {
-      console.error("Failed to fetch allocations:", error);
+      if (latest.total_profit) {
+        setTotalProfit(latest.total_profit);
+      }
+      if (latest.utilization) {
+        setUtilization(latest.utilization * 100); // percentage
+      }
+    } else {
+      console.warn("No allocations found in response.");
+      setAllocations([]);
+      setTotalProfit(0);
+      setUtilization(0);
     }
-  };
+  } catch (error) {
+    console.error("Failed to fetch allocations:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchResources();
