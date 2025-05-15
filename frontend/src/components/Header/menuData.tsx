@@ -21,8 +21,8 @@ const menuData: Menu[] = [
   },
   {
     id: 3,
-    title: "Production Optimization",
-    path: "/production-optimization",
+    title: "Rooms Allocation",
+    path: "/rooms-allocation",
     newTab: false,
   },
   {
