@@ -17,10 +17,20 @@ export default function AllocationForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          time_slots: ["08:00", "09:00", "10:00", "11:00","12:00","13:00","14:00","15:00","16:00","17:00"] // or whatever range you want
+          time_slots: [
+            "08:00",
+            "09:00",
+            "10:00",
+            "11:00",
+            "12:00",
+            "13:00",
+            "14:00",
+            "15:00",
+            "16:00",
+            "17:00",
+          ], // or whatever range you want
         }),
       });
-      
 
       const result = await response.json();
       console.log("Solving result:", result);
@@ -31,8 +41,7 @@ export default function AllocationForm() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-     
+    <div className="mx-auto space-y-8">
       <ResourceForm onResourcesChange={() => {}} />
       <DemandForm onDemandsChange={() => {}} />
       <div className="space-y-4 border-t pt-4">

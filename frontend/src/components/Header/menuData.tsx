@@ -9,13 +9,19 @@ const menuData: Menu[] = [
   },
   {
     id: 3,
-    title: "Production Optimization Problem",
+    title: "Production Optimization",
     path: "/production-optimization",
     newTab: false,
   },
   {
-    id: 4,
-    title: "Rooms Allocation Problem",
+    id: 5,
+    title: "Minimum cost flow",
+    path: "/mcf",
+    newTab: false,
+  },
+  {
+    id: 3,
+    title: "Rooms Allocation",
     path: "/rooms-allocation",
     newTab: false,
   },

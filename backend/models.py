@@ -2,6 +2,18 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 from pydantic import BaseModel, Field
 
+
+class Edge(BaseModel):
+    from_node: str
+    to_node: str
+    capacity: float
+    cost: float
+
+class MCFRequest(BaseModel):
+    nodes: List[str]
+    edges: List[Edge]
+    b_values: List[float]
+
 class Resource(BaseModel):
     name: str
     capacity: int
@@ -36,7 +48,7 @@ class AllocationEntry(BaseModel):
     end: str
     profit: float
 class AllocationResult(BaseModel):
-    timestamp: datetime
+    timestamp: str
     time_slots: List[str]
     allocations: List[AllocationEntry]
     total_profit: float

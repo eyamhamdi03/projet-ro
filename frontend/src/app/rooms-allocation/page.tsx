@@ -12,7 +12,7 @@ export default function RoomAllocationPage() {
   return (
     <>
       <Breadcrumb pageName="Room Allocation" description="" />
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-24 p-6 md:grid-cols-2">
+      <main className="mx-auto grid grid-cols-1 gap-12 p-6 md:grid-cols-2">
         <AllocationForm />
         <HousePlan />
       </main>
