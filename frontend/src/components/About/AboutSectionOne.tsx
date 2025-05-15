@@ -20,7 +20,7 @@ const teamMembers = [
   },
   {
     name: "Mazen Ammar",
-    image: "/images/team/mazen.jpg",
+    image: "/images/mazen.jpg",
   },
 ];
 
