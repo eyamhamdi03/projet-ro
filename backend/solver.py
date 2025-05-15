@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 from typing import List
 import gurobipy as gp
-from gurobipy import GRB
+from gurobipy import GRB, Model, quicksum
 from backend.database import demand_collection, resource_collection, allocation_collection
 from datetime import datetime, timedelta
-from backend.models import AllocationResult, AllocationEntry
+from backend.models import AllocationResult, AllocationEntry,OptimizationResponse, Product, ProductionResult
 
 
 def parse_time(time_str: str) -> int:
@@ -144,3 +144,124 @@ async def solve_allocation(time_slots: List[str]):
 
     except Exception as e:
         return {"error": str(e)}
+    
+from gurobipy import Model, GRB
+from typing import List, Dict
+
+from gurobipy import Model, GRB
+from typing import List, Dict
+
+def solve_cutting_problem(shapes: List[Dict], sheet_width=100, sheet_height=100) -> List[Dict]:
+    model = Model("2D_cutting")
+    model.setParam('OutputFlag', 0)
+
+    placed_shapes = []
+
+    # Prepare variables
+    x_vars = {}  # x coordinate
+    y_vars = {}  # y coordinate
+    used = {}    # 1 if this instance is placed
+
+    rects = []  # (width, height, original shape id)
+
+    for i, shape in enumerate(shapes):
+        for k in range(shape["quantity"]):
+            rect_id = f"{i}_{k}"
+            rects.append((shape["width"], shape["height"], rect_id))
+            x_vars[rect_id] = model.addVar(vtype=GRB.CONTINUOUS, name=f"x_{rect_id}", lb=0)
+            y_vars[rect_id] = model.addVar(vtype=GRB.CONTINUOUS, name=f"y_{rect_id}", lb=0)
+            used[rect_id] = model.addVar(vtype=GRB.BINARY, name=f"used_{rect_id}")
+
+    model.update()
+
+    # Constraints: inside the sheet
+    for width, height, rid in rects:
+        model.addConstr(x_vars[rid] + width <= sheet_width + (1 - used[rid]) * 10000)
+        model.addConstr(y_vars[rid] + height <= sheet_height + (1 - used[rid]) * 10000)
+
+    # Non-overlapping
+    for i in range(len(rects)):
+        for j in range(i + 1, len(rects)):
+            w1, h1, id1 = rects[i]
+            w2, h2, id2 = rects[j]
+
+            b = model.addVar(vtype=GRB.BINARY)  # 1 if separated on x
+            c = model.addVar(vtype=GRB.BINARY)  # 1 if separated on y
+
+            model.addConstr(x_vars[id1] + w1 <= x_vars[id2] + (1 - b) * 10000)
+            model.addConstr(x_vars[id2] + w2 <= x_vars[id1] + b * 10000)
+
+            model.addConstr(y_vars[id1] + h1 <= y_vars[id2] + (1 - c) * 10000)
+            model.addConstr(y_vars[id2] + h2 <= y_vars[id1] + c * 10000)
+
+            # At least one axis separates them
+            model.addConstr(b + c >= 1)
+
+    # Objective: place as many shapes as possible
+    model.setObjective(sum(used.values()), GRB.MAXIMIZE)
+    model.optimize()
+
+    # Collect solution
+    for width, height, rid in rects:
+        if used[rid].x > 0.5:
+            placed_shapes.append({
+                "id": rid,
+                "x": x_vars[rid].x,
+                "y": y_vars[rid].x,
+                "width": width,
+                "height": height
+            })
+
+    return placed_shapes
+
+
+
+def solve_optimization(products: List[Product], deadline: datetime) -> OptimizationResponse:
+    model = Model("production")
+    model.setParam("OutputFlag", 0)  # désactiver les logs pour ne pas encombrer
+
+    today = datetime.now().date()
+    delivery_date = deadline.date()
+    available_days = max((delivery_date - today).days, 1)  # éviter division par zéro
+
+    # Variables de décision
+    vars = {}
+    for p in products:
+        # Limite de production totale basée sur la capacité journalière
+        max_total_possible = min(p.max_production, p.max_per_day * available_days)
+
+        vars[p.name] = model.addVar(
+            lb=p.min_production,
+            ub=max_total_possible,
+            vtype=GRB.CONTINUOUS,  
+            name=p.name
+        )
+
+    # Fonction objectif : maximiser le profit total
+    model.setObjective(
+        sum(vars[p.name] * p.unit_profit for p in products),
+        GRB.MAXIMIZE
+    )
+
+    model.optimize()
+
+    results = []
+    total_profit = 0
+
+    if model.status == GRB.OPTIMAL:
+        for p in products:
+            quantity = vars[p.name].X
+            results.append(ProductionResult(
+                name=p.name,
+                quantity=int(round(quantity)),
+                unit_profit=p.unit_profit,
+                max_production=p.max_production
+            ))
+            total_profit += quantity * p.unit_profit
+    else:
+        raise Exception("Aucune solution optimale trouvée")
+
+    return OptimizationResponse(
+        results=results,
+        total_profit=round(total_profit, 2)
+    )

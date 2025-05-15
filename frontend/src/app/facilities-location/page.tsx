@@ -1,16 +1,44 @@
-import Breadcrumb from "@/components/Common/Breadcrumb";
+'use client';
+import { useState } from 'react';
+import ShapeForm from '@/components/ShapeForm';
+import CuttingPlan from '@/components/CuttingPlan';
 
-import { Metadata } from "next";
+export default function CuttingPage() {
+  const [solution, setSolution] = useState([]);
 
-export const metadata: Metadata = {
-  title: "Facilities Location Problem | Operations Research Project",
-  keywords: "Operations Research, Project, Facilities Location Problem",
-  description:
-    "Facilities Location Problem page for the Operations Research project developed by GL3 students.",
-};
+  const handleAddShape = async (shape: { width: number; height: number; quantity: number }) => {
+    await addShape(shape);
+  };
 
-const FacilitiesLocationPage = () => {
-  return <></>;
-};
+  const handleSolve = async () => {
+    const res = await solveCutting();
+    setSolution(res.solution); // Assuming your API returns the solution in `res.solution`
+  };
 
-export default FacilitiesLocationPage;
+  return (
+    <div className="p-4">
+      <h1>2D Cutting Optimizer</h1>
+      <ShapeForm onAdd={handleAddShape} />
+      <button onClick={handleSolve} className="mt-4 bg-blue-500 text-white p-2">Solve</button>
+      <div className="mt-4">
+        <CuttingPlan shapes={solution} sheetWidth={100} sheetHeight={100} />
+      </div>
+    </div>
+  );
+}
+
+async function addShape(shape: { width: number; height: number; quantity: number }) {
+  const res = await fetch('http://localhost:8000/shape/add_shape', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(shape),
+  });
+  return res.json();
+}
+
+async function solveCutting() {
+  const res = await fetch('http://localhost:8000/solve/solve_cutting_problem', {
+    method: 'POST',
+  });
+  return res.json();
+}

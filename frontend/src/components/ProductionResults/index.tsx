@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 type Result = {
   name: string;
   quantity: number;
-  maxProduction: number;
-  unitProfit: number;
+  max_production: number;
+  unit_profit: number;
 };
 
 type Props = {
@@ -22,34 +22,48 @@ export default function ProductionResults({ results, totalProfit }: Props) {
 
       <div className="mt- rounded-md border p-6 shadow-sm">
         <div className="space-y-4">
-          {results.map((product, index) => {
-            const percent = (product.quantity / product.maxProduction) * 100;
+         {results.map((product, index) => {
+  const percent =
+    product.max_production && product.max_production > 0
+      ? Math.min(100, (product.quantity / product.max_production) * 100)
+      : 0;
 
-            return (
-              <div key={index}>
-                <div className="mb-1 flex justify-between">
-                  <span className="font-medium">{product.name}</span>
-                  <span className="text-muted-foreground text-sm">
-                    {product.quantity} / {product.maxProduction} unités
-                  </span>
-                </div>
+  return (
+    <div key={index}>
+      <div className="mb-1 flex justify-between">
+        <span className="font-medium">{product.name}</span>
+        <span className="text-muted-foreground text-sm">
+          {product.quantity} / {product.max_production} unités
+        </span>
+      </div>
 
-                <div className="relative h-4 w-full rounded bg-gray-200">
-                  <motion.div
-                    className="absolute top-0 left-0 h-full rounded bg-green-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${percent}%` }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                  />
-                </div>
+      <div className="relative h-4 w-full rounded bg-gray-200">
+       <motion.div
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    height: "100%",
+    borderRadius: "0.375rem", // arrondi pour matching tailwind rounded
+    backgroundColor: "green",
+    width: `${percent}%`,
+    minWidth: percent > 0 ? "4px" : "0",
+  }}
+  initial={{ width: 0 }}
+  animate={{ width: `${percent}%` }}
+  transition={{ duration: 1.2, ease: "easeOut" }}
+/>
 
-                <div className="mt-1 text-right text-sm font-semibold text-green-700">
-                  +€
-                  {(product.quantity * product.unitProfit).toFixed(2)}
-                </div>
-              </div>
-            );
-          })}
+      </div>
+
+      <div className="mt-1 text-right text-sm font-semibold text-green-700">
+        +€{(product.quantity * product.unit_profit).toFixed(2)}
+      </div>
+    </div>
+  );
+  
+})}
+
         </div>
 
         <div className="mt-8 border-t pt-4 text-xl font-bold text-green-700">

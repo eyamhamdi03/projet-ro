@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 class Resource(BaseModel):
@@ -46,3 +46,34 @@ class AllocationResult(BaseModel):
         orm_mode = True
 class SolveRequest(BaseModel):
     time_slots: List[str]
+class Shape(BaseModel):
+    width: int
+    height: int
+    quantity: int
+
+
+
+from pydantic import BaseModel, Field
+from typing import List
+
+class Product(BaseModel):
+    name: str
+    unit_profit: float
+    unit_cost: float
+    min_production: int
+    max_production: int
+    max_per_day: int  # nouvelle contrainte par jour
+
+class ProductionRequest(BaseModel):
+    products: List[Product]
+    deadline: datetime
+
+class ProductionResult(BaseModel):
+    name: str
+    quantity: int
+    unit_profit: float
+    max_production: int
+
+class OptimizationResponse(BaseModel):
+    results: List[ProductionResult]
+    total_profit: float

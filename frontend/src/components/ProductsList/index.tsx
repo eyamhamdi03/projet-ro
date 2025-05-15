@@ -2,42 +2,49 @@
 
 import { useEffect, useState } from "react";
 
-type Product = {
+type Product = { 
   name: string;
-  unitProfit: number;
-  unitCost: number;
-  minProduction: number;
-  maxProduction: number;
+  unit_profit: number;
+  unit_cost: number;
+  min_production: number;
+  max_production: number;
 };
-
-const MOCK_PRODUCTS: Product[] = [
-  {
-    name: "Produit A",
-    unitProfit: 50,
-    unitCost: 20,
-    minProduction: 10,
-    maxProduction: 100,
-  },
-  {
-    name: "Produit B",
-    unitProfit: 30,
-    unitCost: 15,
-    minProduction: 5,
-    maxProduction: 80,
-  },
-];
 
 export default function ProductTable() {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    // Simulate a delayed fetch
-    const timeout = setTimeout(() => {
-      setProducts(MOCK_PRODUCTS);
-    }, 500); // simulate loading delay
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/products");
+        if (!response.ok) throw new Error(`Failed to fetch products: ${response.statusText}`);
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
 
-    return () => clearTimeout(timeout);
+    fetchProducts();
   }, []);
+
+  const handleDelete = async (name: string) => {
+    if (!confirm(`Voulez-vous vraiment supprimer le produit "${name}" ?`)) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/products/${encodeURIComponent(name)}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error(`Erreur suppression produit: ${response.statusText}`);
+
+      // Mettre à jour la liste localement
+      setProducts((prev) => prev.filter((p) => p.name !== name));
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de la suppression du produit");
+    }
+  };
 
   return (
     <div className="mt-10 w-full overflow-x-auto rounded-md border p-4">
@@ -50,22 +57,31 @@ export default function ProductTable() {
             <th className="px-3 py-2">Coût unitaire</th>
             <th className="px-3 py-2">Min Production</th>
             <th className="px-3 py-2">Max Production</th>
+            <th className="px-3 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
           {products.length > 0 ? (
-            products.map((product, index) => (
-              <tr key={index} className="hover:bg-color-dark border-b">
+            products.map((product) => (
+              <tr key={product.name} className="hover:bg-gray-200 border-b">
                 <td className="px-3 py-2">{product.name}</td>
-                <td className="px-3 py-2">{product.unitProfit}</td>
-                <td className="px-3 py-2">{product.unitCost}</td>
-                <td className="px-3 py-2">{product.minProduction}</td>
-                <td className="px-3 py-2">{product.maxProduction}</td>
+                <td className="px-3 py-2">{product.unit_profit}</td>
+                <td className="px-3 py-2">{product.unit_cost}</td>
+                <td className="px-3 py-2">{product.min_production}</td>
+                <td className="px-3 py-2">{product.max_production}</td>
+                <td className="px-3 py-2">
+                  <button
+                    onClick={() => handleDelete(product.name)}
+                    className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
+                  >
+                    Supprimer
+                  </button>
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td className="px-3 py-4 text-center" colSpan={5}>
+              <td className="px-3 py-4 text-center" colSpan={6}>
                 Chargement des produits...
               </td>
             </tr>
