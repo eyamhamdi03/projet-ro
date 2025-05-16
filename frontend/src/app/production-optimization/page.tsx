@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Breadcrumb from "@/components/Common/Breadcrumb";
 import ProductionFormComponent from "@/components/ProductionForm";
 import ProductsList from "@/components/ProductsList";
@@ -9,20 +9,19 @@ import ProductionResults from "@/components/ProductionResults";
 interface Result {
   name: string;
   quantity: number;
-  max_production: number;
-  unit_profit: number;
+  maxProduction: number;
+  unitProfit: number;
 }
 
 export default function ProductionPage() {
   const [results, setResults] = useState<Result[]>([]);
   const [totalProfit, setTotalProfit] = useState<number>(0);
+  const [productsKey, setProductsKey] = useState<number>(0); // trigger re-render for products
 
   const fetchResults = async () => {
     try {
-      const response = await fetch("http://localhost:8000/solve/history/latest"); // ← changer selon ta route backend
-      if (!response.ok) {
-        throw new Error(`Error fetching optimization results: ${response.statusText}`);
-      }
+      const response = await fetch("http://localhost:8000/solve/history/latest");
+      if (!response.ok) throw new Error("Failed to fetch results");
       const data = await response.json();
 
       const transformedResults: Result[] = data.results.map((product: any) => ({
@@ -39,9 +38,10 @@ export default function ProductionPage() {
     }
   };
 
-  useEffect(() => {
-    fetchResults();
-  }, []);
+  const refreshAll = async () => {
+    await fetchResults();
+    setProductsKey((prev) => prev + 1); // trigger re-fetch in child via key
+  };
 
   return (
     <>
@@ -49,11 +49,10 @@ export default function ProductionPage() {
       <main className="mx-auto w-full max-w-7xl p-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-6">
-            <ProductionFormComponent />
-            <ProductsList />
+            <ProductionFormComponent onSolve={refreshAll} />
+<ProductsList refreshKey={productsKey} />
           </div>
 
-          {/* Right Column */}
           <div className="gap-6">
             <ProductionResults results={results} totalProfit={totalProfit} />
           </div>

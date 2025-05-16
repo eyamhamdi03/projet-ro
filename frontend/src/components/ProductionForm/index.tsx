@@ -20,8 +20,11 @@ type Product = {
   min_production: number;
   max_per_day: number; // ajouté
 };
+type Props = {
+  onSolve: () => void;
+};
 
-export default function ProductForm() {
+export default function ProductForm({ onSolve }: Props) {
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     unit_profit: 0,
@@ -148,6 +151,7 @@ export default function ProductForm() {
 
       // Met à jour le profit total, par exemple
       setTotalProfit(result.total_profit || 0);
+        if (onSolve) onSolve();    
     } catch (error) {
       console.error("Error in handleSolve:", error);
       alert(`Erreur : ${error instanceof Error ? error.message : "Erreur inconnue"}`);

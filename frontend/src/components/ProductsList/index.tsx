@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type Product = { 
+type Product = {
   name: string;
   unit_profit: number;
   unit_cost: number;
@@ -10,23 +10,23 @@ type Product = {
   max_production: number;
 };
 
-export default function ProductTable() {
-  const [products, setProducts] = useState<Product[]>([]);
-
- 
-
-const fetchProducts = async () => {
-  try {
-    const response = await fetch("http://localhost:8000/products");
-    if (!response.ok) throw new Error(`Failed to fetch products: ${response.statusText}`);
-    const data = await response.json();
-    setProducts(data);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
+type Props = {
+  refreshKey?: number; // 👈 used to trigger refresh
 };
 
+export default function ProductTable({ refreshKey }: Props) {
+  const [products, setProducts] = useState<Product[]>([]);
 
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/products");
+      if (!response.ok) throw new Error(`Failed to fetch products: ${response.statusText}`);
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
   const handleDelete = async (name: string) => {
     if (!confirm(`Voulez-vous vraiment supprimer le produit "${name}" ?`)) return;
@@ -38,16 +38,18 @@ const fetchProducts = async () => {
 
       if (!response.ok) throw new Error(`Erreur suppression produit: ${response.statusText}`);
 
-      // Mettre à jour la liste localement
       setProducts((prev) => prev.filter((p) => p.name !== name));
     } catch (error) {
       console.error(error);
       alert("Erreur lors de la suppression du produit");
     }
   };
- useEffect(() => {
-  fetchProducts();
-}, []);
+
+  // 🔁 Fetch products on mount and whenever `refreshKey` changes
+  useEffect(() => {
+    fetchProducts();
+  }, [refreshKey]);
+
   return (
     <div className="mt-10 w-full overflow-x-auto rounded-md border p-4">
       <h2 className="mb-4 text-lg font-semibold">Liste des Produits</h2>
